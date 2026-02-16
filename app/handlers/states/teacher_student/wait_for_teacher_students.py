@@ -3,12 +3,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.keyboard import markup_type_by_role
+from app.keyboard import KeyboardType
 from app.keyboard.builder import MarkupBuilder
 from app.notifier.telegram_notifier import TelegramNotifier
 from app.services.student_service import StudentService
 from app.services.teacher_service import TeacherService
-from app.services.user_service import UserService
 from app.states.schedule_states import ScheduleStates
 from app.utils.bot_strings import BotStrings
 from app.utils.exceptions.teacher_exceptions import TeacherAlreadyHasStudentException
@@ -26,7 +25,7 @@ async def handle_state(
 ):
     data = await state.get_data()
     teacher_uuid = data["teacher_uuid"]
-    raw_msg = getattr(message, "text", "")
+    raw_msg = message.text
 
     student_service = StudentService(session)
     students, unknown_students = await student_service.parse_students(raw_msg)
@@ -59,10 +58,7 @@ async def handle_state(
             str.format(message_text, student=", ".join(success_students_usernames))
         )
 
-    user_service = UserService(session)
-    username = getattr(message.from_user, "username", "") or ""
-    user = await user_service.get_user(username)
-    markup = MarkupBuilder.build(markup_type_by_role[user.role])
+    markup = MarkupBuilder.build(KeyboardType.TEACHER_MAIN)
     bot_message = main_menu_message(markup)
     await notifier.send_message(
         bot_message=bot_message, receiver_chat_id=message.chat.id
