@@ -13,7 +13,9 @@ def main_menu_message(markup: InlineKeyboardMarkup) -> BotMessage:
     )
 
 
-def slots_added_for_student_message(markup: InlineKeyboardMarkup, slots_message: str | None = None):
+def slots_added_for_student_message(
+    markup: InlineKeyboardMarkup, slots_message: str | None = None
+):
     return BotMessage(
         text=slots_message or BotStrings.Student.SLOTS_ADDED,
         reply_markup=markup,

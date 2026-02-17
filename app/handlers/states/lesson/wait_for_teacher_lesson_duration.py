@@ -23,7 +23,9 @@ async def handle_state(message: Message, state: FSMContext):
         await state.set_state(ScheduleStates.wait_for_teacher_lesson_price)
 
         markup = MarkupBuilder.build(KeyboardType.CANCEL)
-        sent_message = await message.answer(text=BotStrings.Teacher.TEACHER_LESSON_ADD_PRICE, reply_markup=markup)
+        sent_message = await message.answer(
+            text=BotStrings.Teacher.TEACHER_LESSON_ADD_PRICE, reply_markup=markup
+        )
         await state.update_data(previous_message_id=sent_message.message_id)
 
     except Exception as e:
