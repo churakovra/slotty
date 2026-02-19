@@ -25,5 +25,5 @@ async def handle_callback(
     markup_context = DaysForStudentsKeyboardContext(callback_data.teacher_uuid, slots)
     markup = MarkupBuilder.build(KeyboardType.DAYS_FOR_STUDENTS, markup_context)
     reply = await slots_service.get_parsed_slots_reply(slots)
-    message = slots_added_for_student_message(markup, reply)
+    message = slots_added_for_student_message(markup=markup, text=reply)
     await notifier.send_message(message, callback_data.student_chat_id)
