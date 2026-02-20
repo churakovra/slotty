@@ -13,9 +13,7 @@ def main_menu_message(markup: InlineKeyboardMarkup) -> BotMessage:
     )
 
 
-def slots_added_for_student_message(
-    markup: InlineKeyboardMarkup, text: str
-):
+def slots_added_for_student_message(markup: InlineKeyboardMarkup, text: str):
     return BotMessage(
         text=text,
         reply_markup=markup,
