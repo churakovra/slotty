@@ -87,7 +87,7 @@ class TeacherRepository:
             .where(
                 and_(
                     TeacherStudent.uuid_teacher == teacher_uuid,
-                    TeacherStudent.lesson.is_not(None),
+                    TeacherStudent.lesson != None,
                 )
             )
             .scalar_subquery()

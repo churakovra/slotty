@@ -41,7 +41,11 @@ class StudentService:
         unknown_students = list[str]()
         for username in students_raw.split(" "):
             try:
-                students.append(await self.get_student_by_username(username.strip()))
+                students.append(
+                    await self.get_student_by_username(
+                        username.strip().removeprefix("@")
+                    )
+                )
             except UserNotFoundException:
                 unknown_students.append(username.strip())
         return students, unknown_students

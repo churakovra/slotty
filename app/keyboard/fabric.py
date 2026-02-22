@@ -181,6 +181,7 @@ def slots_for_students(
     for slot in context.slots:
         time_str = slot.dt_start.strftime(time_format_HM)
         buttons.append((time_str, SlotsForStudents(uuid_slot=slot.uuid)))
+    buttons.append((BotStrings.Menu.BACK, MenuCallback(menu_type=MenuType.STUDENT)))
     adjust = 1
     return buttons, adjust
 
