@@ -8,7 +8,7 @@ class BotStrings:
 
     class Teacher:
         # * Bind user
-        TEACHER_STUDENT_ADD = "Отправь логин ученика без @, например `kdianitta`\nЛибо отправь несколько учеников через пробел: `kdianitta1 kdianitta2...`"
+        TEACHER_STUDENT_ADD = "Отправь логин ученика (можно несколько через пробел)"
         TEACHER_STUDENTS_ADD_SUCCESS = "Успешно добавил студентов {student}. Теперь они будут получать сообщения о новых окошках"
         TEACHER_STUDENT_ADD_SUCCESS = "Успешно добавил студента {student}. Теперь он будут получать сообщения о новых окошках"
         TEACHER_STUDENT_ADD_UNKNOWN_STUDENTS = "Смогу прикрепить всех кроме {student}\nПроверь, правильно ли указаны их логины"

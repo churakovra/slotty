@@ -37,7 +37,8 @@ async def handle_callback(
         slots = await slots_service.get_free_slots(teacher_uuid)
         makrup_context = DaysForStudentsKeyboardContext(teacher_uuid, slots)
         markup = MarkupBuilder.build(KeyboardType.DAYS_FOR_STUDENTS, makrup_context)
-        message = slots_added_for_student_message(markup)
+        message_text = await slots_service.get_parsed_slots_reply(slots)
+        message = slots_added_for_student_message(text=message_text, markup=markup)
         [await notifier.send_message(message, student.chat_id) for student in students]
         logger.info(f"Teacher {teacher_uuid} sent slots to students")
     except TeacherStudentsNotFound as e:
