@@ -1,6 +1,12 @@
 ___
 ### Changelog
 ___
+_Version 0.0.8_
+  - Fix send/resend slots issues
+  - Add back & cancel buttons in some places
+  - Some refactor
+  - Fix alembic
+
 _Version 0.0.5_  
 ### Big refactor:
   - ORM & repositories refactor
