@@ -4,17 +4,14 @@ from aiogram import Router
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.keyboard.builder import MarkupBuilder
 from app.keyboard.callback_factories.slot import SlotsForStudents
-from app.keyboard.context import SuccessSlotBindKeyboardContext
-from app.notifier.telegram_notifier import TelegramNotifier
-from app.schemas.slot_dto import SlotDTO
-from app.schemas.user_dto import UserDTO
+from app.keyboard.context import UserRole
+from app.message import context
+from app.schemas.slot import SlotDTO
+from app.schemas.user import UserDTO
 from app.services.slot_service import SlotService
 from app.services.teacher_service import TeacherService
 from app.utils.datetime_utils import full_format_no_sec
-from app.utils.enums.bot_values import KeyboardType
-from app.utils.message_template import slot_is_taken_message, success_slot_bind_message
 
 router = Router()
 
@@ -24,7 +21,6 @@ async def handle_callback(
     callback: CallbackQuery,
     callback_data: SlotsForStudents,
     session: AsyncSession,
-    notifier: TelegramNotifier,
     user: UserDTO,
 ):
     slot_uuid = callback_data.uuid_slot
@@ -37,12 +33,12 @@ async def handle_callback(
     )
 
     slot_time = assigned_slot.dt_start.strftime(full_format_no_sec)
-    await notify_student(
-        teacher=teacher, student=user, slot_time=slot_time, notifier=notifier
-    )
-    await notify_teacher(
-        teacher=teacher, student=user, slot_time=slot_time, notifier=notifier
-    )
+    # await notify_student(
+    #     teacher=teacher, student=user, slot_time=slot_time, notifier=notifier
+    # )
+    # await notify_teacher(
+    #     teacher=teacher, student=user, slot_time=slot_time, notifier=notifier
+    # )
 
     await callback.message.delete()
     await callback.answer()
@@ -59,30 +55,23 @@ async def assign_slot(
     )
 
 
-async def notify_student(
-    teacher: UserDTO, student: UserDTO, slot_time: str, notifier: TelegramNotifier
-) -> None:
-    markup_context = SuccessSlotBindKeyboardContext(
-        teacher_uuid=teacher.uuid,
-        student_chat_id=student.chat_id,
-        role=student.role,
-        username=teacher.username,
-    )
-    markup = MarkupBuilder.build(KeyboardType.SUCCESS_SLOT_BIND, markup_context)
-    bot_message = success_slot_bind_message(
-        teacher=teacher.username, slot_time=slot_time, markup=markup
-    )
-    await notifier.send_message(
-        bot_message=bot_message, receiver_chat_id=student.chat_id
+async def notify_student(teacher: UserDTO, student: UserDTO, slot_time: str) -> None:
+    message_context = context.SlotTakenByStudent(
+        teacher.uuid, student.chat_id, UserRole.STUDENT, teacher.username
     )
 
+    # TODO send message via notifier service
 
-async def notify_teacher(
-    teacher: UserDTO, student: UserDTO, slot_time: str, notifier: TelegramNotifier
-) -> None:
-    notify_teacher_message = slot_is_taken_message(
-        student_username=student.username, slot_time=slot_time
-    )
-    await notifier.send_message(
-        bot_message=notify_teacher_message, receiver_chat_id=teacher.chat_id
-    )
+    # await notifier.send_message(
+    #     bot_message=bot_message, receiver_chat_id=student.chat_id
+    # )
+
+
+async def notify_teacher(teacher: UserDTO, student: UserDTO, slot_time: str) -> None:
+    message_context = context.NotifyTeacherSlotTaken(student.username, slot_time)
+
+    # TODO send message via notifier service
+
+    # await notifier.send_message(
+    #     bot_message=notify_teacher_message, receiver_chat_id=teacher.chat_id
+    # )

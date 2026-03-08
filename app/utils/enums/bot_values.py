@@ -27,6 +27,7 @@ class EntityType(StrEnum):
     SLOT = "slot"
     LESSON = "lesson"
     TEACHER = "teacher"
+    UNKNOWN = "unknown"
 
 
 class KeyboardType(StrEnum):

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.orm.teacher_student import TeacherStudent
 from app.database.orm.user import User
-from app.schemas.student_dto import StudentDTO
+from app.schemas.student import StudentDTO
 
 
 class StudentRepository:

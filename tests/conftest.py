@@ -4,8 +4,8 @@ from uuid import uuid4
 
 import pytest
 
-from app.schemas.student_dto import StudentDTO
-from app.schemas.user_dto import UserDTO
+from app.schemas.student import StudentDTO
+from app.schemas.user import UserDTO
 
 
 @pytest.fixture

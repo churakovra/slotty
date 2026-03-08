@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.orm.slot import Slot
 from app.database.orm.teacher_student import TeacherStudent
 from app.database.orm.user import User
-from app.schemas.user_dto import UserDTO
+from app.schemas.user import UserDTO
 from app.utils.logger import setup_logger
 
 logger = setup_logger(__name__)

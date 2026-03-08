@@ -5,7 +5,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.keyboard.builder import MarkupBuilder
 from app.keyboard.callback_factories.slot import (
     SlotCreateCallback,
     SlotDeleteCallback,
@@ -14,18 +13,17 @@ from app.keyboard.callback_factories.slot import (
     SlotsUpdateCallback,
 )
 from app.keyboard.context import (
-    EntitiesListKeyboardContext,
-    EntityOperationsKeyboardContext,
-    SpecifyWeekKeyboardContext,
+    CancelKeyboardContext,
+    MainMenuKeyboardContext,
 )
+from app.message import context, message_builder
 from app.services.lesson_service import LessonService
 from app.services.slot_service import SlotService
 from app.services.student_service import StudentService
 from app.services.teacher_service import TeacherService
 from app.states.schedule_states import ScheduleStates
-from app.utils import message_template as mt
 from app.utils.bot_strings import BotStrings
-from app.utils.enums.bot_values import EntityType, KeyboardType, WeekFlag
+from app.utils.enums.bot_values import EntityType, UserRole, WeekFlag
 from app.utils.exceptions.lesson_exceptions import LessonsNotFoundException
 from app.utils.exceptions.slot_exceptions import SlotsNotFoundException
 from app.utils.exceptions.user_exceptions import UserNotFoundException
@@ -46,10 +44,8 @@ async def specify_week(
     callback: CallbackQuery,
     callback_data: SlotCreateCallback | SlotListCallback,
 ) -> None:
-    markup_context = SpecifyWeekKeyboardContext(type(callback_data))
-    markup = MarkupBuilder.build(KeyboardType.SPECIFY_WEEK, markup_context)
-    message = mt.specify_week_message(markup=markup)
-    await callback.message.answer(**message)
+    message_context = context.SpecifyWeek(type(callback_data))
+    await callback.message.answer(**message_builder.build(message_context))
     await callback.answer()
 
 
@@ -64,10 +60,10 @@ async def create(
     logger.debug("In SlotCreate")
     await state.set_state(ScheduleStates.wait_for_slots)
     await state.update_data(week_flag=callback_data.week_flag)
-    markup = MarkupBuilder.build(KeyboardType.CANCEL)
-    await callback.message.answer(
-        text=BotStrings.Teacher.SLOTS_ADD, reply_markup=markup
+    message_context = context.Common(
+        text=BotStrings.Teacher.SLOTS_ADD, markup_context=CancelKeyboardContext()
     )
+    await callback.message.answer(**message_builder.build(message_context))
     await callback.answer()
     logger.info("Add slot flow has been started")
 
@@ -82,10 +78,10 @@ async def update(
 ):
     await state.set_state(ScheduleStates.wait_for_slots_update)
     await state.update_data(week_flag=callback_data.week_flag)
-    markup = MarkupBuilder.build(KeyboardType.CANCEL)
-    await callback.message.answer(
-        text=BotStrings.Teacher.SLOTS_ADD, reply_markup=markup
+    message_context = context.Common(
+        text=BotStrings.Teacher.SLOTS_ADD, markup_context=CancelKeyboardContext()
     )
+    await callback.message.answer(**message_builder.build(message_context))
     await callback.answer()
 
 
@@ -98,23 +94,25 @@ async def list(
     logger.debug("In SlotList")
     teacher_service = TeacherService(session)
     slot_service = SlotService(session)
+    message_context: context.AbstractBotMessageContext
     try:
-        markup = None
         teacher = await teacher_service.get_teacher(callback.from_user.username)
         slots = await slot_service.get_slots(teacher.uuid, callback_data.week_flag)
-        markup_context = EntitiesListKeyboardContext(slots, EntityType.SLOT)
-        markup = MarkupBuilder.build(KeyboardType.ENTITIES_LIST, markup_context)
-        message_text = BotStrings.Teacher.SLOTS_LIST
+        message_context = context.EntitiesList(slots, EntityType.SLOT)
     except UserNotFoundException as e:
         error_msg = f"Not enough rights. User {e.data} must have Teacher role."
         logger.error(error_msg, e)
-        markup = MarkupBuilder.build(KeyboardType.CANCEL)
-        message_text = BotStrings.Common.NOT_ENOUGH_RIGHTS
+        message_context = context.Common(
+            BotStrings.Common.NOT_ENOUGH_RIGHTS,
+            CancelKeyboardContext(),
+        )
     except SlotsNotFoundException as e:
         logger.error(e)
-        markup = MarkupBuilder.build(KeyboardType.CANCEL)
-        message_text = BotStrings.Teacher.SLOTS_NOT_FOUND
-    await callback.message.answer(text=message_text, reply_markup=markup)
+        message_context = context.Common(
+            BotStrings.Teacher.SLOTS_NOT_FOUND,
+            CancelKeyboardContext(),
+        )
+    await callback.message.answer(**message_builder.build(message_context))
     await callback.answer()
 
 
@@ -124,12 +122,8 @@ async def info(
 ) -> None:
     slot_service = SlotService(session)
     slot = await slot_service.get_slot(callback_data.uuid)
-    markup_context = EntityOperationsKeyboardContext(
-        callback_data.uuid, EntityType.SLOT
-    )
-    markup = MarkupBuilder.build(KeyboardType.ENTITY_OPERATIONS, markup_context)
-    message_text = slot_service.get_slot_info_response(slot)
-    await callback.message.answer(**mt.slot_info(message_text, markup))
+    message_context = context.SlotInfo(slot)
+    await callback.message.answer(**message_builder.build(message_context))
     await callback.answer()
 
 
@@ -140,9 +134,11 @@ async def delete(
     # TODO потестить. Посмотреть, будет ли работать cascade delete.
     slot_service = SlotService(session)
     await slot_service.delete_slot(callback_data.uuid)
-    markup = MarkupBuilder.build(KeyboardType.TEACHER_MAIN)
-    message_text = BotStrings.Teacher.SLOT_DELETE_SUCCESS
-    await callback.message.answer(text=message_text, reply_markup=markup)
+    message_context = context.Common(
+        text=BotStrings.Teacher.SLOT_DELETE_SUCCESS,
+        markup_context=MainMenuKeyboardContext(UserRole.TEACHER),
+    )
+    await callback.message.answer(**message_builder.build(message_context))
     await callback.answer()
 
 
@@ -165,12 +161,8 @@ async def statistics(
             for slot in slots
             if slot.uuid_student
         ]
-        slots_schedule = await slot_service.get_slots_schedule_reply(
-            slots, lessons, students
-        )
-        await callback.message.answer(
-            text=f"`{slots_schedule}`", parse_mode="MarkdownV2"
-        )
+        message_context = context.Statistics(slots, lessons, students)
+        await callback.message.answer(**message_builder.build(message_context))
     except LessonsNotFoundException:
         pass
     except SlotsNotFoundException:

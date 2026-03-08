@@ -3,15 +3,14 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.keyboard import markup_type_by_role
-from app.keyboard.builder import MarkupBuilder
-from app.notifier.telegram_notifier import TelegramNotifier
+from app.keyboard.context import CancelKeyboardContext
+from app.message import message_builder
+from app.message.context import Common
 from app.services.lesson_service import LessonService
 from app.states.schedule_states import ScheduleStates
 from app.utils.bot_strings import BotStrings
-from app.utils.enums.bot_values import ActionType, UserRole
+from app.utils.enums.bot_values import ActionType
 from app.utils.logger import setup_logger
-from app.utils.message_template import main_menu_message
 
 router = Router()
 logger = setup_logger(__name__)
@@ -22,7 +21,6 @@ async def handle_state(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
-    notifier: TelegramNotifier,
 ):
     data = await state.get_data()
     previous_message_id = data["previous_message_id"]
@@ -48,13 +46,11 @@ async def handle_state(
             )
             response_msg = BotStrings.Teacher.TEACHER_LESSON_UPDATE_SUCCESS
 
-        await message.answer(str.format(response_msg))
-
-        markup = MarkupBuilder.build(markup_type_by_role[UserRole.TEACHER])
-        bot_message = main_menu_message(markup)
-        await notifier.send_message(
-            bot_message=bot_message, receiver_chat_id=message.chat.id
+        message_context = Common(
+            text=response_msg,
+            markup_context=CancelKeyboardContext(),
         )
+        await message.answer(**message_builder.build(message_context))
         await state.clear()
 
         logger.info(f"Teacher {uuid_teacher} added new lesson")
