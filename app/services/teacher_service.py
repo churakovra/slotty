@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.teacher_repository import TeacherRepository
-from app.schemas.user_dto import UserDTO
+from app.schemas.user import UserDTO
 from app.utils.enums.bot_values import UserRole
 from app.utils.exceptions.teacher_exceptions import (
     TeacherAlreadyHasStudentException,

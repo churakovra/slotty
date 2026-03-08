@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from app.schemas.user_dto import UserDTO
+from app.schemas.user import UserDTO
 from app.services.teacher_service import TeacherService, logger
 from app.utils.exceptions.teacher_exceptions import (
     TeacherAlreadyHasStudentException,

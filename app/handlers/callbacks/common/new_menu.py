@@ -1,12 +1,10 @@
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
-from app.keyboard import markup_type_by_role
-from app.keyboard.builder import MarkupBuilder
 from app.keyboard.callback_factories.menu import MenuCallback
-from app.schemas.user_dto import UserDTO
+from app.message import context, message_builder
+from app.schemas.user import UserDTO
 from app.utils.enums.menu_type import MenuType
-from app.utils.message_template import main_menu_message
 
 router = Router()
 
@@ -15,7 +13,6 @@ router = Router()
 async def handle_callback(
     callback: CallbackQuery, callback_data: MenuCallback, user: UserDTO
 ):
-    markup = MarkupBuilder.build(markup_type_by_role[user.role])
-    bot_message = main_menu_message(markup)
-    await callback.message.answer(**bot_message)
+    message_context = context.MainMenu(user.role)
+    await callback.message.answer(**message_builder.build(message_context))
     await callback.answer()

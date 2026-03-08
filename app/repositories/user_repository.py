@@ -4,7 +4,7 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.orm.user import User
-from app.schemas.user_dto import CreateUserDTO, UserDTO
+from app.schemas.user import CreateUserDTO, UserDTO
 from app.utils.enums.bot_values import UserRole
 
 

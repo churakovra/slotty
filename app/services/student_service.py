@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.student_repository import StudentRepository
-from app.schemas.lesson_dto import LessonDTO
-from app.schemas.student_dto import StudentDTO
+from app.schemas.lesson import LessonDTO
+from app.schemas.student import StudentDTO
 from app.utils.enums.bot_values import UserRole
 from app.utils.exceptions.teacher_exceptions import TeacherStudentsNotFound
 from app.utils.exceptions.user_exceptions import UserNotFoundException
@@ -49,11 +49,3 @@ class StudentService:
             except UserNotFoundException:
                 unknown_students.append(username.strip())
         return students, unknown_students
-
-    async def get_student_info(
-        self, student: StudentDTO, lessons: list[LessonDTO]
-    ) -> str:
-        name = " ".join([student.firstname, student.lastname or ""])
-        username = student.username
-        student_lessons = ", ".join([lesson.label for lesson in lessons])
-        return f"Имя: {name}\nЛогин: {username}\nПредметы: {student_lessons}"

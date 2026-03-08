@@ -2,20 +2,13 @@ from aiogram import Router
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.keyboard import markup_type_by_role
-from app.keyboard.builder import MarkupBuilder
 from app.keyboard.callback_factories.slot import SendSlots
-from app.keyboard.context import DaysForStudentsKeyboardContext
-from app.notifier.telegram_notifier import TelegramNotifier
+from app.message import context, message_builder
 from app.services.slot_service import SlotService
 from app.services.teacher_service import TeacherService
-from app.utils.enums.bot_values import KeyboardType, UserRole
+from app.utils.enums.bot_values import UserRole
 from app.utils.exceptions.teacher_exceptions import TeacherStudentsNotFound
 from app.utils.logger import setup_logger
-from app.utils.message_template import (
-    main_menu_message,
-    slots_added_for_student_message,
-)
 
 router = Router()
 logger = setup_logger(__name__)
@@ -26,28 +19,23 @@ async def handle_callback(
     callback: CallbackQuery,
     callback_data: SendSlots,
     session: AsyncSession,
-    notifier: TelegramNotifier,
 ):
     teacher_uuid = callback_data.teacher_uuid
     teacher_service = TeacherService(session)
     slots_service = SlotService(session)
-
+    message_context: context.AbstractBotMessageContext
     try:
         students = await teacher_service.get_unsigned_students(teacher_uuid)
         slots = await slots_service.get_free_slots(teacher_uuid)
-        makrup_context = DaysForStudentsKeyboardContext(teacher_uuid, slots)
-        markup = MarkupBuilder.build(KeyboardType.DAYS_FOR_STUDENTS, makrup_context)
-        message_text = await slots_service.get_parsed_slots_reply(slots)
-        message = slots_added_for_student_message(text=message_text, markup=markup)
-        [await notifier.send_message(message, student.chat_id) for student in students]
+
+        message_context = context.DaysForStudents(teacher_uuid, slots)
+        # TODO send messages
+
         logger.info(f"Teacher {teacher_uuid} sent slots to students")
     except TeacherStudentsNotFound as e:
         logger.error(e.message)
         await callback.message.answer(e.message)
     finally:
-        markup = MarkupBuilder.build(markup_type_by_role[UserRole.TEACHER])
-        bot_message = main_menu_message(markup)
-        await notifier.send_message(
-            bot_message=bot_message, receiver_chat_id=callback.message.chat.id
-        )
+        message_context = context.MainMenu(UserRole.TEACHER)
+        await callback.message.answer(**message_builder.build(message_context))
         await callback.answer()

@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 
 from app.repositories.user_repository import UserRepository
-from app.schemas.user_dto import UserDTO
+from app.schemas.user import UserDTO
 from app.utils.enums.bot_values import UserRole
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")

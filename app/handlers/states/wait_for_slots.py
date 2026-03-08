@@ -4,11 +4,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.keyboard.builder import MarkupBuilder
+from app.message import message_builder
+from app.message.context import ParsedSlots
 from app.services.slot_service import SlotService
 from app.services.teacher_service import TeacherService
 from app.states.schedule_states import ScheduleStates
-from app.utils.enums.bot_values import KeyboardType
 from app.utils.logger import setup_logger
 
 router = Router()
@@ -40,6 +40,5 @@ async def wait_for_slots(message: Message, state: FSMContext, session: AsyncSess
     await state.update_data(teacher_uuid=teacher.uuid)
     await state.update_data(slots=slots)
     await state.update_data(action=action)
-    slot_reply = await slot_service.get_parsed_slots_reply(slots)
-    markup = MarkupBuilder.build(KeyboardType.IS_SLOTS_CORRECT)
-    await message.answer(text=slot_reply, reply_markup=markup)
+    message_context = ParsedSlots(slots)
+    await message.answer(**message_builder.build(message_context))
