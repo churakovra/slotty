@@ -5,6 +5,7 @@ class BotStrings:
         SUB_MENU = "Выбери необходимое действие:"
         SPECIFY_WEEK = "Отлично! Для начала выбери неделю:"
         NOT_ENOUGH_RIGHTS = "Ошибка. Недостаточно прав для выполнения данной операции"
+        CONFIRM_OPERATION = "Подтвердите операцию:"
 
     class Teacher:
         # * Bind user

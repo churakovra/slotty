@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.keyboard.builder import MarkupBuilder
 from app.keyboard.callback_factories.menu import ConfirmMenuCallback
 from app.keyboard.context import SendSlotsKeyboardContext
-from app.schemas.slot_dto import CreateSlotDTO
+from app.schemas.slot import CreateSlotDTO
 from app.services.slot_service import SlotService
 from app.states.schedule_states import ScheduleStates
 from app.utils.bot_strings import BotStrings

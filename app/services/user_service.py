@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.user_repository import UserRepository
-from app.schemas.user_dto import CreateUserDTO, UserDTO
+from app.schemas.user import CreateUserDTO, UserDTO
 from app.utils.bot_strings import BotStrings
 from app.utils.datetime_utils import day_format
 from app.utils.enums.bot_values import UserRole

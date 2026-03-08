@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from app.schemas.slot_dto import SlotDTO
+from app.schemas.slot import SlotDTO
 from app.services.slot_service import SlotService
 from app.utils.exceptions.slot_exceptions import (
     SlotFreeNotFoundException,

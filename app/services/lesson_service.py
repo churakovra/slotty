@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.lesson_repository import LessonRepository
-from app.schemas.lesson_dto import CreateLessonDTO, LessonDTO, UpdateLessonDTO
-from app.schemas.slot_dto import SlotDTO
+from app.schemas.lesson import CreateLessonDTO, LessonDTO, UpdateLessonDTO
+from app.schemas.slot import SlotDTO
 from app.utils.exceptions.lesson_exceptions import LessonsNotFoundException
 from app.utils.logger import setup_logger
 
@@ -64,12 +64,6 @@ class LessonService:
     async def get_student_lessons(self, student_uuid: UUID) -> list[LessonDTO]:
         lessons = await self._repository.get_student_lessons(student_uuid)
         return lessons
-
-    async def get_lesson_info(self, lesson: LessonDTO) -> str:
-        label = f"*{lesson.label}*"
-        duration = f"Длительность {lesson.duration} мин"
-        price = f"Стоимость {lesson.price} руб"
-        return f"{label}\n{duration}\n{price}"
 
     async def get_lessons_to_attach(
         self, student_uuid: UUID, teacher_uuid: UUID

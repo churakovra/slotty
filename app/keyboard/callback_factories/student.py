@@ -28,7 +28,7 @@ class StudentUpdateCallback(BaseUpdateCallback, prefix="update-s"):
     pass
 
 
-class StudentAttachCallback(BaseAssignCallback, prefix="attach-s"):
+class StudentAssignCallback(BaseAssignCallback, prefix="attach-s"):
     pass
 
 

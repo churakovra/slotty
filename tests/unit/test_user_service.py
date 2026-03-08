@@ -3,7 +3,7 @@ from uuid import UUID
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.user_dto import CreateUserDTO
+from app.schemas.user import CreateUserDTO
 from app.services.user_service import UserService
 from app.utils.enums.bot_values import UserRole
 from app.utils.exceptions.user_exceptions import (

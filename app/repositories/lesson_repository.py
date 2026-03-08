@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.orm.lesson import Lesson
 from app.database.orm.teacher_student import TeacherStudent
-from app.schemas.lesson_dto import CreateLessonDTO, LessonDTO
-from app.schemas.slot_dto import SlotDTO
+from app.schemas.lesson import CreateLessonDTO, LessonDTO
+from app.schemas.slot import SlotDTO
 from app.utils.logger import setup_logger
 
 logger = setup_logger(__name__)

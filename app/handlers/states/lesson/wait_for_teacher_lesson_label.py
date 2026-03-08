@@ -2,10 +2,11 @@ from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from app.keyboard.builder import MarkupBuilder
+from app.keyboard.context import CancelKeyboardContext
+from app.message import message_builder
+from app.message.context import Common
 from app.states.schedule_states import ScheduleStates
 from app.utils.bot_strings import BotStrings
-from app.utils.enums.bot_values import KeyboardType
 from app.utils.logger import setup_logger
 
 router = Router()
@@ -24,8 +25,9 @@ async def handle_state(message: Message, state: FSMContext):
     await message.chat.delete_message(previous_message_id)
     await message.delete()
 
-    markup = MarkupBuilder.build(KeyboardType.CANCEL)
-    message = await message.answer(
-        text=BotStrings.Teacher.TEACHER_LESSON_ADD_DURATION, reply_markup=markup
+    message_context = Common(
+        text=BotStrings.Teacher.TEACHER_LESSON_ADD_DURATION,
+        markup_context=CancelKeyboardContext()
     )
-    await state.update_data(previous_message_id=message.message_id)
+    sent_message = await message.answer(**message_builder.build(message_context))
+    await state.update_data(previous_message_id=sent_message.message_id)
