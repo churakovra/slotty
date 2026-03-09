@@ -29,3 +29,6 @@ run_migrations:
 lint:
 	$(RUN) ruff format
 	$(RUN) ruff check --fix
+
+run_app:
+	export APP_VERSION=dev && docker compose up --build
