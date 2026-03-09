@@ -21,22 +21,6 @@ from app.keyboard.callback_factories.student import (
     StudentListCallback,
 )
 from app.keyboard.callback_factories.teacher import TeacherCallback
-from app.keyboard.context import (
-    CancelKeyboardContext,
-    ConfirmDeletionKeyboardContext,
-    DaysForStudentsKeyboardContext,
-    EntitiesListKeyboardContext,
-    EntityOperationsKeyboardContext,
-    LessonsAssignKeyboardContext,
-    MainMenuKeyboardContext,
-    ParsedSlotsKeyboardContext,
-    SendSlotsKeyboardContext,
-    SlotsForStudentsKeyboardContext,
-    SpecifyWeekKeyboardContext,
-    SpecsToUpdateKeyboardContext,
-    SubMenuKeyboardContext,
-    SuccessSlotBindKeyboardContext,
-)
 from app.utils.bot_strings import BotStrings
 from app.utils.datetime_utils import WEEKDAYS, day_format, time_format_HM
 from app.utils.enums.bot_values import ActionType, WeekFlag
@@ -45,7 +29,7 @@ from app.utils.enums.menu_type import MenuType
 from ..utils.datetime_utils import full_format_no_sec
 
 
-def teacher_main_menu(context: MainMenuKeyboardContext) -> tuple[list, int]:
+def teacher_main_menu(context) -> tuple[list, int]:
     buttons = [
         ("Ученики", MenuCallback(menu_type=MenuType.TEACHER_STUDENT)),
         ("Окошки", MenuCallback(menu_type=MenuType.TEACHER_SLOT)),
@@ -55,7 +39,7 @@ def teacher_main_menu(context: MainMenuKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def student_main_menu(context: MainMenuKeyboardContext) -> tuple[list, int]:
+def student_main_menu(context) -> tuple[list, int]:
     buttons = [
         ("Преподаватели", MenuCallback(menu_type=MenuType.STUDENT_TEACHER)),
         ("Занятия", MenuCallback(menu_type=MenuType.STUDENT_SLOT)),
@@ -64,7 +48,7 @@ def student_main_menu(context: MainMenuKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def admin_main_menu(context: MainMenuKeyboardContext) -> tuple[list, int]:
+def admin_main_menu(context) -> tuple[list, int]:
     buttons = [
         ("Пока командами", MenuCallback(menu_type=MenuType.ADMIN_TEMP)),
     ]
@@ -72,7 +56,7 @@ def admin_main_menu(context: MainMenuKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def teacher_sub_menu_student(context: SubMenuKeyboardContext) -> tuple[list, int]:
+def teacher_sub_menu_student(context) -> tuple[list, int]:
     buttons = [
         ("Мои ученики", StudentListCallback()),
         ("Добавить ученика", StudentCreateCallback()),
@@ -82,7 +66,7 @@ def teacher_sub_menu_student(context: SubMenuKeyboardContext) -> tuple[list, int
     return buttons, adjust
 
 
-def teacher_sub_menu_slot(context: SubMenuKeyboardContext) -> tuple[list, int]:
+def teacher_sub_menu_slot(context) -> tuple[list, int]:
     buttons = [
         ("Моё расписание", SlotListCallback()),
         ("Добавить окошки", SlotCreateCallback()),
@@ -92,7 +76,7 @@ def teacher_sub_menu_slot(context: SubMenuKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def teacher_sub_menu_lesson(context: SubMenuKeyboardContext) -> tuple[list, int]:
+def teacher_sub_menu_lesson(context) -> tuple[list, int]:
     buttons = [
         ("Мои предметы", LessonListCallback()),
         ("Добавить предмет", LessonCreateCallback()),
@@ -102,7 +86,7 @@ def teacher_sub_menu_lesson(context: SubMenuKeyboardContext) -> tuple[list, int]
     return buttons, adjust
 
 
-def student_sub_menu_teacher(context: SubMenuKeyboardContext) -> tuple[list, int]:
+def student_sub_menu_teacher(context) -> tuple[list, int]:
     buttons = [
         ("Заглушка", TeacherCallback(action=ActionType.LIST)),
         (BotStrings.Menu.BACK, MenuCallback(menu_type=MenuType.STUDENT)),
@@ -111,7 +95,7 @@ def student_sub_menu_teacher(context: SubMenuKeyboardContext) -> tuple[list, int
     return buttons, adjust
 
 
-def student_sub_menu_slot(context: SubMenuKeyboardContext) -> tuple[list, int]:
+def student_sub_menu_slot(context) -> tuple[list, int]:
     buttons = [
         ("Заглушка", SlotListCallback()),
         (BotStrings.Menu.BACK, MenuCallback(menu_type=MenuType.STUDENT)),
@@ -120,7 +104,7 @@ def student_sub_menu_slot(context: SubMenuKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def admin_sub_menu_temp(context: SubMenuKeyboardContext) -> tuple[list, int]:
+def admin_sub_menu_temp(context) -> tuple[list, int]:
     buttons = [
         ("Пока командами", MenuCallback(menu_type=MenuType.ADMIN_TEMP)),
         (BotStrings.Menu.BACK, MenuCallback(menu_type=MenuType.ADMIN)),
@@ -129,7 +113,7 @@ def admin_sub_menu_temp(context: SubMenuKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def parsed_slots(context: ParsedSlotsKeyboardContext) -> tuple[list, int]:
+def parsed_slots(context) -> tuple[list, int]:
     buttons = [
         (BotStrings.Menu.YES, ConfirmMenuCallback(confirm=True)),
         (BotStrings.Menu.NO, ConfirmMenuCallback(confirm=False)),
@@ -138,7 +122,7 @@ def parsed_slots(context: ParsedSlotsKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def send_slots(context: SendSlotsKeyboardContext, *args, **kwargs) -> tuple[list, int]:
+def send_slots(context) -> tuple[list, int]:
     buttons = [
         (BotStrings.Menu.SEND, SendSlots(teacher_uuid=context.teacher_uuid)),
         (BotStrings.Menu.CANCEL, MenuCallback(menu_type=MenuType.TEACHER)),
@@ -147,7 +131,7 @@ def send_slots(context: SendSlotsKeyboardContext, *args, **kwargs) -> tuple[list
     return buttons, adjust
 
 
-def days_for_students(context: DaysForStudentsKeyboardContext) -> tuple[list, int]:
+def days_for_students(context) -> tuple[list, int]:
     prev_slot_date = None
     buttons = []
     for slot in context.slots:
@@ -167,7 +151,7 @@ def days_for_students(context: DaysForStudentsKeyboardContext) -> tuple[list, in
     return buttons, adjust
 
 
-def slots_for_students(context: SlotsForStudentsKeyboardContext) -> tuple[list, int]:
+def slots_for_students(context) -> tuple[list, int]:
     buttons = []
     for slot in context.slots:
         time_str = slot.dt_start.strftime(time_format_HM)
@@ -177,9 +161,7 @@ def slots_for_students(context: SlotsForStudentsKeyboardContext) -> tuple[list, 
     return buttons, adjust
 
 
-def success_slot_bind(
-    context: SuccessSlotBindKeyboardContext, *args, **kwargs
-) -> tuple[list, int]:
+def success_slot_bind(context) -> tuple[list, int]:
     buttons = [
         (
             BotStrings.Menu.BIND_ANOTHER_SLOT,
@@ -194,9 +176,7 @@ def success_slot_bind(
     return buttons, adjust
 
 
-def specify_week(
-    context: SpecifyWeekKeyboardContext
-) -> tuple[list, int]:
+def specify_week(context) -> tuple[list, int]:
     buttons = [
         (
             BotStrings.Menu.CURRENT_WEEK,
@@ -209,7 +189,7 @@ def specify_week(
     return buttons, adjust
 
 
-def confirm_deletion(context: ConfirmDeletionKeyboardContext) -> tuple[list, int]:
+def confirm_deletion(context) -> tuple[list, int]:
     # TODO think about NO callback. Maybe should use some 'decline callback' and only then in it's handler send menu to user
     buttons = [
         (
@@ -222,9 +202,7 @@ def confirm_deletion(context: ConfirmDeletionKeyboardContext) -> tuple[list, int
     return buttons, adjust
 
 
-def specs_to_update(
-    context: SpecsToUpdateKeyboardContext, *args, **kwargs
-) -> tuple[list, int]:
+def specs_to_update(context) -> tuple[list, int]:
     context.specs["all"] = "Всё"
     buttons = [
         (label, context.callback_data_cls(uuid=context.lesson_uuid, spec=spec))
@@ -235,7 +213,7 @@ def specs_to_update(
     return buttons, adjust
 
 
-def student_buttons(context: EntitiesListKeyboardContext) -> tuple[list, int]:
+def student_buttons(context) -> tuple[list, int]:
     buttons = [
         (
             " ".join([student.firstname, student.lastname or ""]),
@@ -250,7 +228,7 @@ def student_buttons(context: EntitiesListKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def lesson_buttons(context: EntitiesListKeyboardContext) -> tuple[list, int]:
+def lesson_buttons(context) -> tuple[list, int]:
     buttons = [
         (lesson.label, LessonInfoCallback(uuid=lesson.uuid))
         for lesson in context.lessons
@@ -262,7 +240,7 @@ def lesson_buttons(context: EntitiesListKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def slot_buttons(context: EntitiesListKeyboardContext) -> tuple[list, int]:
+def slot_buttons(context) -> tuple[list, int]:
     buttons = [
         (slot.dt_start.strftime(full_format_no_sec), SlotInfoCallback(uuid=slot.uuid))
         for slot in context.slots
@@ -274,7 +252,7 @@ def slot_buttons(context: EntitiesListKeyboardContext) -> tuple[list, int]:
     return buttons, adjust
 
 
-def entity_operations(context: EntityOperationsKeyboardContext) -> tuple[list, int]:
+def entity_operations(context) -> tuple[list, int]:
     buttons = [
         (name, allowed_operation(uuid=context.uuid))
         for name, allowed_operation in context.operations[context.entity_type].items()
@@ -284,7 +262,7 @@ def entity_operations(context: EntityOperationsKeyboardContext) -> tuple[list, i
     return buttons, adjust
 
 
-def lessons_to_assign(context: LessonsAssignKeyboardContext) -> tuple[list, int]:
+def lessons_to_assign(context) -> tuple[list, int]:
     buttons = [
         (
             lesson.label,
@@ -302,7 +280,7 @@ def lessons_to_assign(context: LessonsAssignKeyboardContext) -> tuple[list, int]
     return buttons, adjust
 
 
-def cancel_markup(context: CancelKeyboardContext) -> tuple[list, int]:
+def cancel_markup(context) -> tuple[list, int]:
     buttons = [(BotStrings.Menu.CANCEL, MenuCallback(menu_type=MenuType.CANCEL))]
     adjust = 1
     return buttons, adjust
