@@ -3,7 +3,8 @@ from os import getenv
 
 from dotenv import load_dotenv
 
-APP_VERSION = getenv("APP_VERSION", "dev")
+APP_VERSION = getenv("APP_VERSION") or "dev"
+
 
 conf_dir = os.path.dirname(__file__)
 envs_path = os.path.join(conf_dir, "envs", f"{APP_VERSION}.env")
