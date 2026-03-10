@@ -78,13 +78,13 @@ class EntitiesList(AbstractBotMessageContext):
         super().__init__(self._define_text(entity_type))
         self.markup_context = EntitiesListKeyboardContext(entities, entity_type)
 
-    def _define_text(self, entity_type):
+    def _define_text(self, entity_type) -> str:
         entity_type_to_text = {
             EntityType.LESSON: BotStrings.Teacher.TEACHER_LESSON_LIST,
             EntityType.SLOT: BotStrings.Teacher.SLOTS_LIST,
             EntityType.STUDENT: BotStrings.Teacher.TEACHER_STUDENTS_LIST,
         }
-        self.text = entity_type_to_text[entity_type]
+        return entity_type_to_text[entity_type]
 
 
 class StudentInfo(AbstractBotMessageContext):
