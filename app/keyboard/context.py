@@ -96,37 +96,37 @@ class SubMenuKeyboardContext(AbstractMarkupContext):
 
 @dataclass
 class ParsedSlotsKeyboardContext(AbstractMarkupContext):
-    fabric = parsed_slots
+    fabric = staticmethod(parsed_slots)
 
 
 @dataclass
 class CancelKeyboardContext(AbstractMarkupContext):
-    fabric = cancel_markup
+    fabric = staticmethod(cancel_markup)
 
 
 @dataclass
 class SendSlotsKeyboardContext(AbstractMarkupContext):
-    fabric = send_slots
+    fabric = staticmethod(send_slots)
     teacher_uuid: UUID
 
 
 @dataclass
 class DaysForStudentsKeyboardContext(AbstractMarkupContext):
-    fabric = days_for_students
+    fabric = staticmethod(days_for_students)
     teacher_uuid: UUID
     slots: list[SlotDTO]
 
 
 @dataclass
 class SlotsForStudentsKeyboardContext(AbstractMarkupContext):
-    fabric = slots_for_students
+    fabric = staticmethod(slots_for_students)
     teacher_uuid: UUID
     slots: list[SlotDTO]
 
 
 @dataclass
 class SuccessSlotBindKeyboardContext(AbstractMarkupContext):
-    fabric = success_slot_bind
+    fabric = staticmethod(success_slot_bind)
     teacher_uuid: UUID
     student_chat_id: int
     username: str
@@ -135,7 +135,7 @@ class SuccessSlotBindKeyboardContext(AbstractMarkupContext):
 
 @dataclass
 class SpecifyWeekKeyboardContext(AbstractMarkupContext):
-    fabric = specify_week
+    fabric = staticmethod(specify_week)
     callback_cls: type[SpecifyWeekMixin]
 
 
@@ -168,7 +168,7 @@ class EntitiesListKeyboardContext(AbstractMarkupContext):
 
 @dataclass
 class EntityOperationsKeyboardContext(AbstractMarkupContext):
-    fabric = entity_operations
+    fabric = staticmethod(entity_operations)
     uuid: UUID
     entity_type: EntityType
 
@@ -205,14 +205,14 @@ class LessonOperationKeyboardContext(AbstractMarkupContext):
 
 @dataclass
 class ConfirmDeletionKeyboardContext(AbstractMarkupContext):
-    fabric = confirm_deletion
+    fabric = staticmethod(confirm_deletion)
     callback_data_cls: type[BaseDeleteCallback]
     callback_data: BaseDeleteCallback
 
 
 @dataclass
 class SpecsToUpdateKeyboardContext(AbstractMarkupContext):
-    fabric = specs_to_update
+    fabric = staticmethod(specs_to_update)
     lesson_uuid: UUID
     specs: dict[str, str]
     callback_data_cls: type[BaseUpdateCallback]
@@ -220,7 +220,7 @@ class SpecsToUpdateKeyboardContext(AbstractMarkupContext):
 
 @dataclass
 class LessonsAssignKeyboardContext(AbstractMarkupContext):
-    fabric = lessons_to_assign
+    fabric = staticmethod(lessons_to_assign)
     student_uuid: UUID
     assign_callback: type[BaseAssignCallback]
     lessons: list[LessonDTO]
