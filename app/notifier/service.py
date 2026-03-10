@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Bot
 
 
-class NotifierService:
+class NotifyService:
     def __init__(self, bot: Bot):
         self.bot = Bot
 
