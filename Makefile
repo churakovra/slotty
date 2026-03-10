@@ -21,7 +21,7 @@ install:
 venv: init install
 
 clean:
-	rm -rf .venv
+	rm -rf .venv **/__pycache__ **/.pyc
 
 create_db:
 	docker exec -it postgres createdb -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) $(DB_NAME)
