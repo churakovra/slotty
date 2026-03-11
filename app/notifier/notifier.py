@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Bot
 
 
-class NotifyService:
+class Notifier:
     def __init__(self, bot: Bot):
         self.bot = Bot
 
@@ -11,8 +11,6 @@ class NotifyService:
         tasks = []
         for receiver in receivers:
             tasks.append(
-                asyncio.Task(
-                    self.bot.send_message(chat_id=receiver.id, **bot_message)
-                )
+                asyncio.Task(self.bot.send_message(chat_id=receiver.id, **bot_message))
             )
         asyncio.gather(*tasks)
