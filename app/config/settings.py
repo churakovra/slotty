@@ -1,6 +1,7 @@
 import os
 from os import getenv
 
+from aio_pika import ExchangeType
 from dotenv import load_dotenv
 
 APP_VERSION = getenv("APP_VERSION") or "dev"
@@ -27,3 +28,5 @@ AMQP_HOST = getenv("AMQP_HOST")
 AMQP_PORT = getenv("AMQP_PORT")
 AMQP_VHOST = getenv("AMQP_VHOST")
 AMQP_URL = f"amqp://{AMQP_USER}:{AMQP_PASSWORD}@{AMQP_HOST}/{AMQP_VHOST}"
+AMQP_DEFAULT_EXCHANGE = "slotty"
+AMQP_DEFAULT_EXCHANGE_TYPE = ExchangeType.DIRECT
