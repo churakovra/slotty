@@ -5,7 +5,7 @@ from aiogram import Bot
 
 class Notifier:
     def __init__(self, bot: Bot):
-        self.bot = Bot
+        self.bot = bot
 
     async def send_message(self, bot_message, receivers):
         tasks = []

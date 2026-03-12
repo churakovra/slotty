@@ -4,8 +4,12 @@ from os import getenv
 from aio_pika import ExchangeType
 from dotenv import load_dotenv
 
-APP_VERSION = getenv("APP_VERSION") or "dev"
+from app.utils.enums.common import ServiceType
 
+APP_VERSION = getenv("APP_VERSION") or "dev"
+SERVICE_TYPE = getenv("SERVICE_TYPE") or "app"
+if SERVICE_TYPE not in (ServiceType.APP, ServiceType.CONSUMER):
+    raise Exception("Wrong service type")
 
 conf_dir = os.path.dirname(__file__)
 envs_path = os.path.join(conf_dir, "envs", f"{APP_VERSION}.env")

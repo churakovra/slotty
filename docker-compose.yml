@@ -11,3 +11,15 @@ services:
         max_attempts: 2
 
     command: uv run python -m app.main
+
+  notifier:
+    build: .
+    container_name: notifier
+    environment:
+      - SERVICE_TYPE=consumer
+      - APP_VERSION=${APP_VERSION}
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 2
+    command: uv run python -m app.main
