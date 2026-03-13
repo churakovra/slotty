@@ -50,6 +50,13 @@ class AbstractBotMessageContext:
         self.markup_context = markup_context
         self.parse_mode = parse_mode
 
+    def to_dict(self):
+        return {
+            "text": self.text,
+            "markup_context": self.markup_context.to_dict(),
+            "parse_mode": self.parse_mode()
+        }
+
 
 class MainMenu(AbstractBotMessageContext):
     def __init__(self, user_role: UserRole) -> None:
@@ -182,7 +189,24 @@ class SlotTakenByStudent(AbstractBotMessageContext):
             role=role,
             username=teacher_username,
         )
-
+        
+        """
+        how it should be
+        def to_dict(self):
+            return {
+                "text": self.text,
+                "markup_context": {
+                    "cls": f"{type(self.markup_context)}",
+                    "properties": {
+                        "teacher_uuid": self.teacher_uuid,
+                        "student_chat_id": self.student_chat_id,
+                        "role": self.role,
+                        "username": self.username
+                    }
+                },
+                "parse_mode": self.parse_mode
+            }
+        """
 
 @dataclass
 class NotifyTeacherSlotTaken(AbstractBotMessageContext):
