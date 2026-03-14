@@ -2,7 +2,7 @@ from typing import Any
 
 from app.keyboard import markup_builder
 from app.message.context import AbstractBotMessageContext
-from app.schemas.message import BotMessage
+from app.message.message import BotMessage
 
 
 class BotMessageBuilder:
