@@ -14,5 +14,4 @@ async def cancel(message: Message, state: FSMContext, user: UserDTO) -> None:
     await state.clear()
 
     message_context = context.MainMenu(user.role)
-    message = message_builder.build(message_context)
-    await message.answer(**message)
+    await message.answer(**message_builder.build(message_context))

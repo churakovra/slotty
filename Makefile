@@ -1,8 +1,16 @@
 PYTHON_VERSION := $(shell cat .python-version)
 RUN = . .venv/bin/activate;
-DATABASE = scheduler-db
-ENV_FILE = .env
+
+include .env
+
+ENV_CONFIGS_PATH = app/config/envs
+ENV_FILE = $(PWD)/$(ENV_CONFIGS_PATH)/$(APP_VERSION).env
+
 include $(ENV_FILE)
+
+pwd:
+	echo $(APP_VERSION)
+	echo $(ENV_FILE)
 
 init:
 	uv venv -nv -p $(PYTHON_VERSION) .venv
@@ -13,7 +21,7 @@ install:
 venv: init install
 
 clean:
-	rm -rf .venv
+	rm -rf .venv **/__pycache__ **/.pyc
 
 create_db:
 	docker exec -it postgres createdb -U $(DB_USER) -h $(DB_HOST) -p $(DB_PORT) $(DB_NAME)
@@ -29,3 +37,6 @@ run_migrations:
 lint:
 	$(RUN) ruff format
 	$(RUN) ruff check --fix
+
+run_app:
+	export APP_VERSION=dev && docker compose up --build

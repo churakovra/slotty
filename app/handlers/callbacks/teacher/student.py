@@ -68,6 +68,9 @@ async def list(callback: CallbackQuery, session: AsyncSession) -> None:
     try:
         teacher = await teacher_service.get_teacher(username)
         students = await student_service.get_students_by_teacher_uuid(teacher.uuid)
+        logger.debug(f"teacher {teacher}")
+        logger.debug(f"teacher.uuid {teacher.uuid}")
+        logger.debug(f"students {students}")
         message_context = context.EntitiesList(students, EntityType.STUDENT)
     except UserNotFoundException as e:
         # TODO send error msg; send MainMenu msg via notifier

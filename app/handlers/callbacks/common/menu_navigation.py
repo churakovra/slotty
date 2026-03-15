@@ -66,7 +66,7 @@ async def handle_cancel(
     user: UserDTO,
 ):
     message_context = context.Common(
-        text=BotStrings.Menu.MENU, markup_context=MainMenuKeyboardContext(user.role)
+        text=BotStrings.Common.MENU, markup_context=MainMenuKeyboardContext(user.role)
     )
     await state.clear()
     await callback.message.answer(**message_builder.build(message_context))

@@ -1,16 +1,11 @@
-import calendar
 import string
-from datetime import date, datetime, timedelta
-from io import StringIO
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from tabulate import tabulate
 
 from app.repositories.slot_repository import SlotRepository
-from app.schemas.lesson import LessonDTO
 from app.schemas.slot import CreateSlotDTO, SlotDTO
-from app.schemas.user import UserDTO
 from app.utils.datetime_utils import WEEKDAYS
 from app.utils.enums.bot_values import WeekFlag
 from app.utils.exceptions.slot_exceptions import (

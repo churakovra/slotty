@@ -1,8 +1,8 @@
-from collections.abc import Callable
 from dataclasses import dataclass
 from uuid import UUID
 
 from app.keyboard.callback_factories.common import (
+    BaseDeleteCallback,
     BaseOperationCallback,
 )
 from app.keyboard.callback_factories.lesson import LessonDeleteCallback
@@ -25,25 +25,14 @@ from app.keyboard.context import (
     SpecifyWeekKeyboardContext,
     SuccessSlotBindKeyboardContext,
 )
-from app.message.fabric import (
-    common,
-    confirm_operation,
-    days_for_students,
-    entities_list,
-    greeting,
-    lesson_info,
-    main_menu_message,
-    notify_teacher_slot_taken,
-    parsed_slots_message,
-    slot_info,
-    slot_taken_by_student,
-    specify_week,
-    statistics,
-    student_assign,
-    student_info,
+from app.message.utils import (
+    get_lesson_info,
+    get_slot_info,
+    get_slots_schedule_reply,
+    get_student_info,
+    slots_to_reply,
 )
 from app.schemas.lesson import LessonDTO
-from app.schemas.message import BotMessage
 from app.schemas.slot import SlotDTO
 from app.schemas.student import StudentDTO
 from app.utils.bot_strings import BotStrings
@@ -51,178 +40,181 @@ from app.utils.enums.bot_values import EntityType, UserRole
 
 
 class AbstractBotMessageContext:
-    fabric: Callable[..., BotMessage]
+    def __init__(
+        self,
+        text: str,
+        markup_context: AbstractMarkupContext | None = None,
+        parse_mode: str | None = None,
+    ) -> None:
+        self.text = text
+        self.markup_context = markup_context
+        self.parse_mode = parse_mode
 
-@dataclass
+    def to_dict(self):
+        return {
+            "text": self.text,
+            "markup_context": self.markup_context.to_dict(),
+            "parse_mode": self.parse_mode()
+        }
+
+
+class MainMenu(AbstractBotMessageContext):
+    def __init__(self, user_role: UserRole) -> None:
+        super().__init__(BotStrings.Common.MENU)
+        self.user_role = user_role
+        self.markup_context = MainMenuKeyboardContext(user_role)
+
+
 class Common(AbstractBotMessageContext):
-    fabric = common
-    text: str
-    markup_context: AbstractMarkupContext | None = None
-
-
-@dataclass
-class Greeting(AbstractBotMessageContext):
-    fabric = greeting
     pass
 
 
-@dataclass
-class MainMenu(AbstractBotMessageContext):
-    fabric = main_menu_message
-    user_role: UserRole
-
-    @property
-    def markup_context(self) -> MainMenuKeyboardContext:
-        return MainMenuKeyboardContext(self.user_role)
+class Greeting(AbstractBotMessageContext):
+    def __init__(self):
+        super().__init__(BotStrings.Common.GREETING)
 
 
-@dataclass
 class ParsedSlots(AbstractBotMessageContext):
-    fabric = parsed_slots_message
-    slots: list[SlotDTO]
-    markup_context = ParsedSlotsKeyboardContext()
+    def __init__(self, slots: list[SlotDTO]) -> None:
+        super().__init__(slots_to_reply(slots))
+        self.markup_context = ParsedSlotsKeyboardContext()
 
 
-@dataclass
 class EntitiesList(AbstractBotMessageContext):
-    fabric = entities_list
-    entities: list
-    entity_type: EntityType
+    def __init__(self, entities: list, entity_type: EntityType) -> None:
+        super().__init__(self._define_text(entity_type))
+        self.markup_context = EntitiesListKeyboardContext(entities, entity_type)
 
-    @property
-    def text(self) -> str:
+    def _define_text(self, entity_type) -> str:
         entity_type_to_text = {
             EntityType.LESSON: BotStrings.Teacher.TEACHER_LESSON_LIST,
             EntityType.SLOT: BotStrings.Teacher.SLOTS_LIST,
             EntityType.STUDENT: BotStrings.Teacher.TEACHER_STUDENTS_LIST,
         }
-        return entity_type_to_text[self.entity_type]
+        return entity_type_to_text[entity_type]
 
-    @property
-    def markup_context(self) -> EntitiesListKeyboardContext:
-        return EntitiesListKeyboardContext(
-            self.entities,
-            self.entity_type,
+
+class StudentInfo(AbstractBotMessageContext):
+    def __init__(self, student: StudentDTO, lessons: list[LessonDTO]) -> None:
+        super().__init__(get_student_info(student, lessons))
+        self.markup_context = EntityOperationsKeyboardContext(
+            student.uuid, EntityType.STUDENT
         )
 
 
-@dataclass
-class StudentInfo(AbstractBotMessageContext):
-    fabric = student_info
-    student: StudentDTO
-    lessons: list[LessonDTO]
-
-    @property
-    def markup_context(self) -> EntityOperationsKeyboardContext:
-        return EntityOperationsKeyboardContext(self.student.uuid, EntityType.STUDENT)
-
-
-@dataclass
 class SlotInfo(AbstractBotMessageContext):
-    fabric = slot_info
-    slot: SlotDTO
+    def __init__(self, slot: SlotDTO) -> None:
+        super().__init__(get_slot_info(slot))
+        self.markup_context = EntityOperationsKeyboardContext(
+            slot.uuid, EntityType.SLOT
+        )
 
-    @property
-    def markup_context(self) -> EntityOperationsKeyboardContext:
-        return EntityOperationsKeyboardContext(self.slot.uuid, EntityType.SLOT)
 
-
-@dataclass
 class LessonInfo(AbstractBotMessageContext):
-    fabric = lesson_info
-    lesson: LessonDTO
+    def __init__(self, lesson: LessonDTO) -> None:
+        super().__init__(get_lesson_info(lesson))
+        self.markup_context = EntityOperationsKeyboardContext(
+            lesson.uuid, EntityType.LESSON
+        )
+        self.parse_mode = "MarkdownV2"
 
-    @property
-    def markup_context(self) -> EntityOperationsKeyboardContext:
-        return EntityOperationsKeyboardContext(self.lesson.uuid, EntityType.LESSON)
 
-
-
-@dataclass
 class ConfirmOperation(AbstractBotMessageContext):
-    fabric = confirm_operation
-    operation_callback: type[BaseOperationCallback]
-    callback_data: BaseOperationCallback
+    def __init__(
+        self, operation_callback: BaseOperationCallback, callback_data
+    ) -> None:
+        super().__init__(BotStrings.Common.CONFIRM_OPERATION)
+        self._define_markup_context(operation_callback, callback_data)
 
-    @property
-    def markup_context(self) -> ConfirmDeletionKeyboardContext:
+    def _define_markup_context(
+        self,
+        operation_callback: BaseOperationCallback,
+        callback_data: BaseDeleteCallback,
+    ) -> None:
         # TODO add update confirm callbacks
         delete_callbacks = [
             StudentDeleteCallback,
             SlotDeleteCallback,
             LessonDeleteCallback,
         ]
-        if self.operation_callback in delete_callbacks:
-            return ConfirmDeletionKeyboardContext(
-                self.operation_callback, self.callback_data
-            )
-        else:
-            raise Exception(f"Unknown operation {self.operation_callback}")
-
-
-@dataclass
-class StudentAssign(AbstractBotMessageContext):
-    fabric = student_assign
-    student_uuid: UUID
-    lessons: list[LessonDTO]
-
-    @property
-    def markup_context(self) -> LessonsAssignKeyboardContext:
-        return LessonsAssignKeyboardContext(
-            self.student_uuid, StudentAssignCallback, self.lessons
+        if operation_callback not in delete_callbacks:
+            raise Exception(f"Unknown operation {operation_callback}")
+        self.markup_context = ConfirmDeletionKeyboardContext(
+            operation_callback, callback_data
         )
 
 
-@dataclass
+class StudentAssign(AbstractBotMessageContext):
+    def __init__(self, student_uuid: UUID, lessons: list[LessonDTO]) -> None:
+        super().__init__(BotStrings.Teacher.STUDENT_ATTACH_LESSONS_LIST)
+        self.markup_context = LessonsAssignKeyboardContext(
+            student_uuid, StudentAssignCallback, lessons
+        )
+
+
 class SpecifyWeek(AbstractBotMessageContext):
-    fabric = specify_week
-    callback_cls: type[SpecifyWeekMixin]
-
-    @property
-    def markup_context(self) -> SpecifyWeekKeyboardContext:
-        return SpecifyWeekKeyboardContext(self.callback_cls)
+    def __init__(self, callback_cls: type[SpecifyWeekMixin]) -> None:
+        super().__init__(BotStrings.Common.SPECIFY_WEEK)
+        self.markup_context = SpecifyWeekKeyboardContext(callback_cls)
 
 
-@dataclass
 class Statistics(AbstractBotMessageContext):
-    fabric = statistics
-    markup_context = CancelKeyboardContext()
-    slots: list[SlotDTO]
-    lessons: list[LessonDTO]
-    students: list[StudentDTO]
+    def __init__(
+        self, slots: list[SlotDTO], lessons: list[LessonDTO], students: list[StudentDTO]
+    ) -> None:
+        super().__init__(get_slots_schedule_reply(slots, lessons, students))
+        self.markup_context = CancelKeyboardContext()
+        self.parse_mode = "MarkdownV2"
 
 
-@dataclass
 class DaysForStudents(AbstractBotMessageContext):
-    fabric = days_for_students
-    teacher_uuid: UUID
-    slots: list[SlotDTO]
+    def __init__(self, teacher_uuid: UUID, slots: list[SlotDTO]) -> None:
+        super().__init__(slots_to_reply(slots))
+        self.markup_context = DaysForStudentsKeyboardContext(teacher_uuid, slots)
 
-    @property
-    def markup_context(self) -> DaysForStudentsKeyboardContext:
-        return DaysForStudentsKeyboardContext(self.teacher_uuid, self.slots)
-    
 
 @dataclass
 class SlotTakenByStudent(AbstractBotMessageContext):
-    fabric = slot_taken_by_student
-    teacher_uuid: UUID
-    student_chat_id: int
-    role: UserRole
-    teacher_username: str
-
-    @property
-    def markup_context(self):
-        return SuccessSlotBindKeyboardContext(
-            teacher_uuid=self.teacher_uuid,
-            student_chat_id=self.student_chat_id,
-            role=self.role,
-            username=self.teacher_username,
+    def __init__(
+        self,
+        teacher_uuid: UUID,
+        student_chat_id: int,
+        role: UserRole,
+        teacher_username: str,
+    ) -> None:
+        super().__init__(BotStrings.Student.SLOTS_ASSIGN_SUCCESS)
+        self.markup_context = SuccessSlotBindKeyboardContext(
+            teacher_uuid=teacher_uuid,
+            student_chat_id=student_chat_id,
+            role=role,
+            username=teacher_username,
         )
-    
+        
+        """
+        how it should be
+        def to_dict(self):
+            return {
+                "text": self.text,
+                "markup_context": {
+                    "cls": f"{type(self.markup_context)}",
+                    "properties": {
+                        "teacher_uuid": self.teacher_uuid,
+                        "student_chat_id": self.student_chat_id,
+                        "role": self.role,
+                        "username": self.username
+                    }
+                },
+                "parse_mode": self.parse_mode
+            }
+        """
 
 @dataclass
 class NotifyTeacherSlotTaken(AbstractBotMessageContext):
-    fabric = notify_teacher_slot_taken
-    student_username: str
-    slot_time: str
+    def __init__(self, student_username: str, slot_time: str) -> None:
+        super().__init__(
+            BotStrings.Teacher.SLOT_IS_TAKEN
+            % (
+                student_username,
+                slot_time,
+            )
+        )
