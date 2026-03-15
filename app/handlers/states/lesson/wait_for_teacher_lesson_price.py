@@ -3,7 +3,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.keyboard.context import CancelKeyboardContext
+from app.keyboard.context import (
+    MainMenuKeyboardContext,
+    UserRole,
+)
 from app.message import message_builder
 from app.message.context import Common
 from app.services.lesson_service import LessonService
@@ -48,7 +51,7 @@ async def handle_state(
 
         message_context = Common(
             text=response_msg,
-            markup_context=CancelKeyboardContext(),
+            markup_context=MainMenuKeyboardContext(UserRole.TEACHER),
         )
         await message.answer(**message_builder.build(message_context))
         await state.clear()

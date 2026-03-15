@@ -5,15 +5,21 @@ services:
     restart: unless-stopped
     environment:
       - APP_VERSION=${APP_VERSION}
-      - BOT_TOKEN=${BOT_TOKEN}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
     deploy:
       restart_policy:
         condition: on-failure
         max_attempts: 2
 
+    command: uv run python -m app.main
+
+  notifier:
+    build: .
+    container_name: notifier
+    environment:
+      - SERVICE_TYPE=consumer
+      - APP_VERSION=${APP_VERSION}
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 2
     command: uv run python -m app.main

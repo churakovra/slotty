@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.keyboard.callback_factories.slot import SendSlots
 from app.message import context, message_builder
+from app.message.message_pack import MessagePack, MessageRecipient
+from app.notifier.producer import MessageProducer
 from app.services.slot_service import SlotService
 from app.services.teacher_service import TeacherService
 from app.utils.enums.bot_values import UserRole
@@ -19,6 +21,7 @@ async def handle_callback(
     callback: CallbackQuery,
     callback_data: SendSlots,
     session: AsyncSession,
+    producer: MessageProducer,
 ):
     teacher_uuid = callback_data.teacher_uuid
     teacher_service = TeacherService(session)
@@ -27,10 +30,14 @@ async def handle_callback(
     try:
         students = await teacher_service.get_unsigned_students(teacher_uuid)
         slots = await slots_service.get_free_slots(teacher_uuid)
-
         message_context = context.DaysForStudents(teacher_uuid, slots)
-        # TODO send messages
-
+        message_pack = MessagePack(
+            message_context=message_context,
+            message_recipients=[
+                MessageRecipient(chat_id=student.chat_id) for student in students
+            ],
+        )
+        await producer.produce(message_pack)
         logger.info(f"Teacher {teacher_uuid} sent slots to students")
     except TeacherStudentsNotFound as e:
         logger.error(e.message)
