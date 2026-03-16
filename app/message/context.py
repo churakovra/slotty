@@ -54,7 +54,7 @@ class AbstractBotMessageContext:
         return {
             "text": self.text,
             "markup_context": self.markup_context.to_dict(),
-            "parse_mode": self.parse_mode()
+            "parse_mode": self.parse_mode(),
         }
 
 
@@ -189,7 +189,7 @@ class SlotTakenByStudent(AbstractBotMessageContext):
             role=role,
             username=teacher_username,
         )
-        
+
         """
         how it should be
         def to_dict(self):
@@ -207,6 +207,7 @@ class SlotTakenByStudent(AbstractBotMessageContext):
                 "parse_mode": self.parse_mode
             }
         """
+
 
 @dataclass
 class NotifyTeacherSlotTaken(AbstractBotMessageContext):

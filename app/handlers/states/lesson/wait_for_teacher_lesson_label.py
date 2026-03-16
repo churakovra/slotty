@@ -27,7 +27,7 @@ async def handle_state(message: Message, state: FSMContext):
 
     message_context = Common(
         text=BotStrings.Teacher.TEACHER_LESSON_ADD_DURATION,
-        markup_context=CancelKeyboardContext()
+        markup_context=CancelKeyboardContext(),
     )
     sent_message = await message.answer(**message_builder.build(message_context))
     await state.update_data(previous_message_id=sent_message.message_id)

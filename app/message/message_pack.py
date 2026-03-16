@@ -19,7 +19,9 @@ class MessagePack:
     def to_dict(self):
         result = {
             "message_context": self.message_context.to_dict(),
-            "message_recipients": [recipient.__dict__ for recipient in self.message_recipients],
+            "message_recipients": [
+                recipient.__dict__ for recipient in self.message_recipients
+            ],
         }
         logger.debug(result)
         return result

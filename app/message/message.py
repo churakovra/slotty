@@ -7,4 +7,4 @@ from app.keyboard.markup import BotMarkup
 class BotMessage:
     text: str
     markup: BotMarkup | None = field(default=None)
-    parse_mode: str | None = field(default= None)
+    parse_mode: str | None = field(default=None)
