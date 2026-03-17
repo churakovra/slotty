@@ -1,9 +1,17 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from app.keyboard.builder import MarkupBuilder
-from app.keyboard.fabric import admin_main_menu, student_main_menu, teacher_main_menu
-from app.keyboard.markup import BotMarkup, MarkupButton
+from app.keyboard.fabric import (
+    admin_main_menu,
+    entity_operations,
+    student_main_menu,
+    teacher_main_menu,
+)
+from app.keyboard.markup import BotMarkup
+from app.message.utils import get_lesson_info, get_slot_info, get_student_info
+from app.schemas.lesson import LessonDTO
+from app.schemas.slot import SlotDTO
+from app.schemas.student import StudentDTO
 from app.utils.bot_strings import BotStrings
 from app.utils.enums.bot_values import UserRole
 
@@ -45,4 +53,18 @@ class BotMessage:
         return cls(
             text=BotStrings.Common.MENU,
             markup=markup,
+        )
+
+    @classmethod
+    def entity_info(cls, entity, **kwargs):
+        info_by_entity = {
+            type[StudentDTO]: get_student_info,
+            type[SlotDTO]: get_slot_info,
+            type[LessonDTO]: get_lesson_info,
+        }
+        parse_mode = "MarkdownV2" if isinstance(entity, LessonDTO) else None
+        return cls(
+            text=info_by_entity[type(entity)](entity, **kwargs),
+            markup=entity_operations(entity.uuid, type(entity)),
+            parse_mode=parse_mode,
         )

@@ -15,7 +15,7 @@ from app.keyboard.context import (
     MainMenuKeyboardContext,
     SpecsToUpdateKeyboardContext,
 )
-from app.message import context, message_builder
+from app.message.message import BotMessage
 from app.schemas.user import UserDTO
 from app.services.lesson_service import LessonService
 from app.services.teacher_service import TeacherService
@@ -85,7 +85,7 @@ async def info(
 ):
     lesson_service = LessonService(session)
     lesson = await lesson_service.get_lesson(callback_data.uuid)
-    message_context = context.LessonInfo(lesson)
+    message_context = BotMessage.entity_info(lesson)
     await callback.message.answer(**message_builder.build(message_context))
     await callback.answer()
 

@@ -93,32 +93,6 @@ class EntitiesList(AbstractBotMessageContext):
         }
         return entity_type_to_text[entity_type]
 
-
-class StudentInfo(AbstractBotMessageContext):
-    def __init__(self, student: StudentDTO, lessons: list[LessonDTO]) -> None:
-        super().__init__(get_student_info(student, lessons))
-        self.markup_context = EntityOperationsKeyboardContext(
-            student.uuid, EntityType.STUDENT
-        )
-
-
-class SlotInfo(AbstractBotMessageContext):
-    def __init__(self, slot: SlotDTO) -> None:
-        super().__init__(get_slot_info(slot))
-        self.markup_context = EntityOperationsKeyboardContext(
-            slot.uuid, EntityType.SLOT
-        )
-
-
-class LessonInfo(AbstractBotMessageContext):
-    def __init__(self, lesson: LessonDTO) -> None:
-        super().__init__(get_lesson_info(lesson))
-        self.markup_context = EntityOperationsKeyboardContext(
-            lesson.uuid, EntityType.LESSON
-        )
-        self.parse_mode = "MarkdownV2"
-
-
 class ConfirmOperation(AbstractBotMessageContext):
     def __init__(
         self, operation_callback: BaseOperationCallback, callback_data
@@ -189,25 +163,6 @@ class SlotTakenByStudent(AbstractBotMessageContext):
             role=role,
             username=teacher_username,
         )
-
-        """
-        how it should be
-        def to_dict(self):
-            return {
-                "text": self.text,
-                "markup_context": {
-                    "cls": f"{type(self.markup_context)}",
-                    "properties": {
-                        "teacher_uuid": self.teacher_uuid,
-                        "student_chat_id": self.student_chat_id,
-                        "role": self.role,
-                        "username": self.username
-                    }
-                },
-                "parse_mode": self.parse_mode
-            }
-        """
-
 
 @dataclass
 class NotifyTeacherSlotTaken(AbstractBotMessageContext):

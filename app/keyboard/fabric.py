@@ -1,9 +1,12 @@
 import calendar
+from typing import Any
 
 from app.keyboard.callback_factories.lesson import (
     LessonCreateCallback,
+    LessonDeleteCallback,
     LessonInfoCallback,
     LessonListCallback,
+    LessonUpdateCallback,
 )
 from app.keyboard.callback_factories.menu import ConfirmMenuCallback, MenuCallback
 from app.keyboard.callback_factories.slot import (
@@ -11,17 +14,25 @@ from app.keyboard.callback_factories.slot import (
     ResendSlotsCallback,
     SendSlots,
     SlotCreateCallback,
+    SlotDeleteCallback,
     SlotInfoCallback,
     SlotListCallback,
     SlotsForStudents,
+    SlotUpdateCallback,
 )
 from app.keyboard.callback_factories.student import (
+    StudentAssignCallback,
     StudentCreateCallback,
+    StudentDeleteCallback,
+    StudentDetachCallback,
     StudentInfoCallback,
     StudentListCallback,
 )
 from app.keyboard.callback_factories.teacher import TeacherCallback
 from app.keyboard.markup import BotMarkup, MarkupButton, MarkupRow
+from app.schemas.lesson import LessonDTO
+from app.schemas.slot import SlotDTO
+from app.schemas.student import StudentDTO
 from app.utils.bot_strings import BotStrings
 from app.utils.datetime_utils import WEEKDAYS, day_format, time_format_HM
 from app.utils.enums.bot_values import ActionType, WeekFlag
@@ -385,20 +396,23 @@ def specs_to_update(context) -> BotMarkup:
 
 def student_buttons(context) -> BotMarkup:
     rows = [
-            MarkupRow(
-                [
-                    MarkupButton(
-                        " ".join([student.firstname, student.lastname or ""]),
-                        StudentInfoCallback(uuid=student.uuid),
-                    )
-                ]
-            )
-            for student in context.students
-        ]
+        MarkupRow(
+            [
+                MarkupButton(
+                    " ".join([student.firstname, student.lastname or ""]),
+                    StudentInfoCallback(uuid=student.uuid),
+                )
+            ]
+        )
+        for student in context.students
+    ]
     rows.append(
         MarkupRow(
             [
-                MarkupButton(BotStrings.Menu.BACK, MenuCallback(menu_type=MenuType.TEACHER_STUDENT))
+                MarkupButton(
+                    BotStrings.Menu.BACK,
+                    MenuCallback(menu_type=MenuType.TEACHER_STUDENT),
+                )
             ]
         )
     )
@@ -407,17 +421,16 @@ def student_buttons(context) -> BotMarkup:
 
 def lesson_buttons(context) -> BotMarkup:
     rows = [
-            MarkupRow(
-                [
-                    MarkupButton(lesson.label, LessonInfoCallback(uuid=lesson.uuid))
-                ]
-            )
-            for lesson in context.lessons
-        ]
+        MarkupRow([MarkupButton(lesson.label, LessonInfoCallback(uuid=lesson.uuid))])
+        for lesson in context.lessons
+    ]
     rows.append(
         MarkupRow(
             [
-                MarkupButton(BotStrings.Menu.BACK, MenuCallback(menu_type=MenuType.TEACHER_LESSON))
+                MarkupButton(
+                    BotStrings.Menu.BACK,
+                    MenuCallback(menu_type=MenuType.TEACHER_LESSON),
+                )
             ]
         )
     )
@@ -426,37 +439,51 @@ def lesson_buttons(context) -> BotMarkup:
 
 def slot_buttons(context) -> BotMarkup:
     rows = [
-            MarkupRow(
-                [
-                    MarkupButton(slot.dt_start.strftime(full_format_no_sec), SlotInfoCallback(uuid=slot.uuid))
-                ]
-            )
-            for slot in context.slots
-        ]
+        MarkupRow(
+            [
+                MarkupButton(
+                    slot.dt_start.strftime(full_format_no_sec),
+                    SlotInfoCallback(uuid=slot.uuid),
+                )
+            ]
+        )
+        for slot in context.slots
+    ]
     rows.append(
         MarkupRow(
             [
-                MarkupButton(BotStrings.Menu.BACK, MenuCallback(menu_type=MenuType.TEACHER_SLOT))
+                MarkupButton(
+                    BotStrings.Menu.BACK, MenuCallback(menu_type=MenuType.TEACHER_SLOT)
+                )
             ]
         )
     )
     return BotMarkup(rows)
 
 
-def entity_operations(context) -> BotMarkup:
+def entity_operations(uuid, entity_type) -> BotMarkup:
+    operations: dict[Any, dict[str, Any]] = {
+        type[StudentDTO]: {
+            BotStrings.Menu.ATTACH: StudentAssignCallback,
+            BotStrings.Menu.DETACH: StudentDetachCallback,
+            BotStrings.Menu.DELETE: StudentDeleteCallback,
+        },
+        type[LessonDTO]: {
+            BotStrings.Menu.UPDATE: LessonUpdateCallback,
+            BotStrings.Menu.DELETE: LessonDeleteCallback,
+        },
+        type[SlotDTO]: {
+            BotStrings.Menu.UPDATE: SlotUpdateCallback,
+            BotStrings.Menu.DELETE: SlotDeleteCallback,
+        },
+    }
     rows = [
-            MarkupRow(
-                [
-                    MarkupButton(name, allowed_operation(uuid=context.uuid))
-                ]
-            )
-            for name, allowed_operation in context.operations[context.entity_type].items()
-        ]
+        MarkupRow([MarkupButton(name, allowed_operation(uuid=uuid))])
+        for name, allowed_operation in operations[entity_type].items()
+    ]
     rows.append(
         MarkupRow(
-            [
-                MarkupButton(BotStrings.Menu.CANCEL, MenuCallback(menu_type=MenuType.NEW))
-            ]
+            [MarkupButton(BotStrings.Menu.CANCEL, MenuCallback(menu_type=MenuType.NEW))]
         )
     )
     return BotMarkup(rows)
@@ -464,23 +491,26 @@ def entity_operations(context) -> BotMarkup:
 
 def lessons_to_assign(context) -> BotMarkup:
     rows = [
-            MarkupRow(
-                [
-                    MarkupButton(
-                        lesson.label,
-                        context.assign_callback(
-                            uuid=context.student_uuid,
-                            id_lesson=lesson.id,
-                        ),
-                    )
-                ]
-            )
-            for lesson in context.lessons
-        ]
+        MarkupRow(
+            [
+                MarkupButton(
+                    lesson.label,
+                    context.assign_callback(
+                        uuid=context.student_uuid,
+                        id_lesson=lesson.id,
+                    ),
+                )
+            ]
+        )
+        for lesson in context.lessons
+    ]
     rows.append(
         MarkupRow(
             [
-                MarkupButton(BotStrings.Menu.CANCEL, MenuCallback(menu_type=MenuType.TEACHER_STUDENT))
+                MarkupButton(
+                    BotStrings.Menu.CANCEL,
+                    MenuCallback(menu_type=MenuType.TEACHER_STUDENT),
+                )
             ]
         )
     )
@@ -492,7 +522,9 @@ def cancel_markup(context) -> BotMarkup:
         [
             MarkupRow(
                 [
-                    MarkupButton(BotStrings.Menu.CANCEL, MenuCallback(menu_type=MenuType.CANCEL)),
+                    MarkupButton(
+                        BotStrings.Menu.CANCEL, MenuCallback(menu_type=MenuType.CANCEL)
+                    ),
                 ]
             )
         ]
