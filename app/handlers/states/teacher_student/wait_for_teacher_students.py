@@ -4,7 +4,7 @@ from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.keyboard.context import UserRole
-from app.message import context, message_builder
+from app.message.message import BotMessage
 from app.services.student_service import StudentService
 from app.services.teacher_service import TeacherService
 from app.states.schedule_states import ScheduleStates
@@ -57,5 +57,5 @@ async def handle_state(
 
     await state.clear()
 
-    message_context = context.MainMenu(UserRole.TEACHER)
-    await message.answer(**message_builder.build(message_context))
+    bot_message = BotMessage.main_menu(UserRole.TEACHER)
+    await message.answer(**bot_message.prepare())
