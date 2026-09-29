@@ -43,20 +43,19 @@ class StudentService:
         self, teacher_uuid: UUID
     ) -> list[StudentDTO]:
         students = await self._repository.get_students_by_teacher_uuid(teacher_uuid)
-        if len(students) <= 0:
+        if not students:
             raise TeacherStudentsNotFound(teacher_uuid)
         return students
 
     async def parse_students(
         self, students_raw: str
     ) -> tuple[list[StudentDTO], list[str]]:
-        students = list[StudentDTO]()
-        unknown_students = list[str]()
+        students: list[StudentDTO] = []
+        unknown_students: list[str] = []
         for username in students_raw.split(" "):
+            username = username.strip()
             try:
-                students.append(
-                    await self.get_student(username.strip().removeprefix("@"))
-                )
+                students.append(await self.get_student(username.removeprefix("@")))
             except UserNotFoundException:
-                unknown_students.append(username.strip())
+                unknown_students.append(username)
         return students, unknown_students
